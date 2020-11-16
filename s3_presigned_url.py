@@ -64,22 +64,27 @@ def create_presigned_post(bucket_name, object_name,
 
 
 def main():
+    fields = {
+        'content-type': 'image/jpg'
+    }
+    conditions = [{"content-type": "image/jpg"}]
     # 生成上传presigned url
-    response = create_presigned_post('liyx-media','upload/presigned/test.jpg')
+    response = create_presigned_post('liyx-media','upload/presigned/test4.jpg', fields=fields,conditions=conditions)
     if response is None:
         exit(1)
     logging.info(json.dumps(response))
     # 将本地文件使用request post通过presigned url上传至s3
-    object_name='/tmp/663466.jpg'
+    object_name='/tmp/43585d.jpg'
     logging.info("Starts to upload...")
     with open(object_name, 'rb') as f:
         files = {'file': (object_name, f)}
         http_response = requests.post(response['url'], data=response['fields'], files=files)
     # 查看上传结果
     logging.info(f'File upload HTTP status code: {http_response.status_code}')
+    logging.info(http_response.text)
     
     # 获取访问pre-signed访问地址
-    resp = create_presigned_url('liyx-media', 'upload/presigned/test.jpg')
+    resp = create_presigned_url('liyx-media', 'upload/presigned/test4.jpg')
     logging.info(json.dumps(resp))
     
 
