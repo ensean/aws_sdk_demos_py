@@ -1,6 +1,9 @@
 import boto3
 import datetime
-cloudwatch = boto3.client('cloudwatch')
+cloudwatch = boto3.client('cloudwatch',
+                          aws_access_key_id='xxx',
+                          aws_secret_access_key='xxx',
+                          region_name='eu-entral-1')
 
 resp = cloudwatch.get_metric_data(
     MetricDataQueries=[
