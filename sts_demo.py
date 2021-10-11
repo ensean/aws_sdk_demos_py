@@ -9,7 +9,9 @@ import json
 
 参考资料：
     1.STS服务端PHP样例代码：https://stackoverflow.com/questions/21956794/aws-assumerole-user-is-not-authorized-to-perform-stsassumerole-on-resource
-    2.iOS SDK S3传输工具API文档：https://docs.aws.amazon.com/AWSiOSSDK/latest/Classes/AWSS3TransferUtility.html
+    2.iOS SDK S3传输工具API文档：
+        https://docs.aws.amazon.com/AWSiOSSDK/latest/Classes/AWSS3TransferUtility.html
+        https://aws.amazon.com/blogs/mobile/amazon-s3-transfer-utility-for-ios/
     3.iOS SDK S3文件操作Demo：https://github.com/awslabs/aws-sdk-ios-samples/tree/main/S3TransferUtility-Sample/Objective-C
         备注：需要参考API文档将凭证从Cognito替换为STS临时凭证
 """
