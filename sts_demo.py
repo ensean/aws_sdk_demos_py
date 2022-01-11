@@ -5,7 +5,21 @@ import json
     1)模拟sts服务端生成临时凭证，访问s3特定文件
     2)模拟客户端使用此临时凭证删除特定文件
 配置说明：
-    1）创建IAM角色，赋予S3FullAccess，作为临时凭证模板（需要配置服务端代码IAM能够assume改角色）
+    1）创建IAM角色(mobileUpload2S3Role)，赋予S3FullAccess(或者特定桶的完全操作权限)，作为临时凭证模板。注意：需要配置服务端ak sk对应的用户能够assume该角色，配置方式为编辑该角色的“信任关系”，填入类似如下内容
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::012345678912:user/user_name"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+
 
 参考资料：
     1.STS服务端PHP样例代码：https://stackoverflow.com/questions/21956794/aws-assumerole-user-is-not-authorized-to-perform-stsassumerole-on-resource
@@ -19,7 +33,7 @@ import json
 sts_client = boto3.client('sts')
 
 def gen_single_obj_policy(bucket, obj_key):
-    # 限制临时凭证只能操作
+    # 限制临时凭证只能操作bucket下的文件obj_key
     single_obj_access_policy = {
         "Version": "2012-10-17",
         "Statement": [
