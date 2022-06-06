@@ -150,7 +150,7 @@ class CloudWatchWrapper:
 # snippet-start:[python.example_code.cloudwatch.PutMetricAlarm]
     def create_metric_alarm(
             self, metric_namespace, metric_name, alarm_name, stat_type, period,
-            eval_periods, threshold, comparison_op, dims):
+            eval_periods, threshold, comparison_op, dims, actions):
         """
         Creates an alarm that watches a metric.
 
@@ -173,6 +173,7 @@ class CloudWatchWrapper:
             metric = self.cloudwatch_resource.Metric(metric_namespace, metric_name)
             alarm = metric.put_alarm(
                 AlarmName=alarm_name,
+                AlarmActions=actions,
                 Statistic=stat_type,
                 Period=period,
                 EvaluationPeriods=eval_periods,
@@ -266,7 +267,7 @@ def usage_demo():
 
     metric_namespace = 'AWS/RDS'
     metric_name = 'CPUUtilization'
-    alarm_name = 'RDS_CPU_UsageHigh'
+    alarm_name = 'RDS_CPU_UsageHigh'    # Alarm名称，根据需要调整
     period = 60                     # 告警统计周期单位为秒，根据需要调整
     eval_periods = 2                # 连续x次则触发告警，根据需要调整
     print(f"Creating alarm {alarm_name} for metric {metric_name}.")
@@ -277,9 +278,14 @@ def usage_demo():
             'Value': 'mysql-slow-query'     # RDS数据库标识，根据需要调整，一次只能包含一个
         }
     ]
+
+    # actions 指定告警发生时的动作，比如通过SNS发送邮件通知
+    actions = [
+        'arn:aws:sns:ap-northeast-1:123456789123:cw-alarm-topic'    # 填SNS的ARN
+    ]
     alarm = cw_wrapper.create_metric_alarm(
         metric_namespace, metric_name, alarm_name, 'Average', period, eval_periods,
-        90, 'GreaterThanThreshold', dims)
+        90, 'GreaterThanThreshold', dims, actions)
     print(f"Alarm ARN is {alarm.alarm_arn}.")
     print(f"Current alarm state is: {alarm.state_value}.")
     print("Thanks for watching!")
