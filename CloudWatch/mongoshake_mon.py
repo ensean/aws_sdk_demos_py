@@ -7,9 +7,6 @@ import boto3
 import sys
 import json
 import requests
-import datetime
-import random
-import time
 
 
 def query_repl_result(url):
