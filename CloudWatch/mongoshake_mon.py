@@ -4,10 +4,12 @@
     延迟
 """
 import boto3
-import sys
+import time
 import json
 import requests
 
+TARGET_URLS = ['']  # mongoshake 增量监控地址
+INTERVAL = 60       # 采集间隔(秒)
 
 def query_repl_result(url):
     resp = requests.get(url)
@@ -58,14 +60,12 @@ def put_metrics_to_cloudwatch(repl_metrics):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("python mongoshake_mon.py url or python mongoshake_mon.py url1,url2,url3")
-    else:
-        urls = sys.argv[1].split(',')
-        for url in urls:
+    while True:
+        for url in TARGET_URLS:
             repl_result = query_repl_result(url)
             metrics = parse_metrics(repl_result)
             put_metrics_to_cloudwatch(metrics)
+        time.sleep(INTERVAL)
 
 if __name__ == '__main__':
     main()
