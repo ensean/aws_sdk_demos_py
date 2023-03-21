@@ -23,7 +23,7 @@ def parse_metrics(repl_result):
     now_unix = repl_result.get('now').get('unix')
     lsn_ckpt_unix = repl_result.get('lsn_ckpt').get('unix')
     lag = now_unix - lsn_ckpt_unix  # lag in seconds
-
+    storage_resolution = 1 if INTERVAL < 60 else 60     # 是否需要按秒级存储指标
     metric_data = [
         {
             'MetricName': 'tps',
@@ -35,7 +35,7 @@ def parse_metrics(repl_result):
             ],
             'Timestamp': now_unix,
             'Value': tps,
-            'StorageResolution': 60
+            'StorageResolution': storage_resolution
         },
         {
             'MetricName': 'lag',
@@ -48,7 +48,7 @@ def parse_metrics(repl_result):
             'Timestamp': now_unix,
             'Value': lag,
             'Unit': 'Seconds',
-            'StorageResolution': 60
+            'StorageResolution': storage_resolution
         }
     ]
     return metric_data
