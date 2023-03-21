@@ -22,8 +22,6 @@ def parse_metrics(repl_result):
     tps = repl_result.get('tps', -1)
     who = repl_result.get('who')
     now_unix = repl_result.get('now').get('unix')
-    lsn_unix = repl_result.get('lsn').get('unix')
-    lsn_ack_unix = repl_result.get('lsn_ack').get('unix')
     lsn_ckpt_unix = repl_result.get('lsn_ckpt').get('unix')
     lag = now_unix - lsn_ckpt_unix  # lag in seconds
 
@@ -50,6 +48,7 @@ def parse_metrics(repl_result):
             ],
             'Timestamp': now_unix,
             'Value': lag,
+            'Unit': 'Seconds',
             'StorageResolution': 60
         }
     ]
@@ -63,43 +62,13 @@ def put_metrics_to_cloudwatch(repl_metrics):
 
 def main():
     if len(sys.argv) != 2:
-        print("python mongoshake_mon.py url")
+        print("python mongoshake_mon.py url or python mongoshake_mon.py url1,url2,url3")
     else:
-        for i in range(1, 100):
-            # repl_result = query_repl_result(sys.argv[1])
-            ts = int(datetime.datetime.now().timestamp())
-            repl_result = {
-                "logs_get": 2,
-                "logs_repl": 0,
-                "logs_success": 0,
-                "lsn": {
-                    "time": "1970-01-01 08:00:00",
-                    "ts": "0",
-                    "unix": ts - 120
-                },
-                "lsn_ack": {
-                    "time": "1970-01-01 08:00:00",
-                    "ts": "0",
-                    "unix": ts - 130
-                },
-                "lsn_ckpt": {
-                    "time": "1970-01-01 08:00:00",
-                    "ts": "0",
-                    "unix": ts - 140
-                },
-                "now": {
-                    "time": "2020-04-03 18:32:28",
-                    "unix": ts
-                },
-                "replset": "zz-186-replica-3177x",
-                "tag": "improve-2.4.1,6badf6dfa00ebc0fc1a34e4864814733c5849daf,release,go1.10.8,2020-04-03_18:19:37",
-                "tps": random.randint(3000,6000),
-                "who": "mongoshake-inst1"
-            }
+        urls = sys.argv[1].split(',')
+        for url in urls:
+            repl_result = query_repl_result(url)
             metrics = parse_metrics(repl_result)
             put_metrics_to_cloudwatch(metrics)
-            time.sleep(61)
-
 
 if __name__ == '__main__':
     main()
