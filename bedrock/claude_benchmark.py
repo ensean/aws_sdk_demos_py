@@ -11,7 +11,7 @@ def inf():
             "max_tokens_to_sample": 512,
         }
     )
-
+    # model ids https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     response = bedrock.invoke_model(body=body, modelId="anthropic.claude-v2")
     response_body = json.loads(response.get("body").read())
     print(response_body.get("completion"))
@@ -22,7 +22,7 @@ async def inf_as(lp):
 
 def main():
     loop = asyncio.get_event_loop()
-    tasks = [loop.create_task(inf_as(loop)) for _ in range(2000)]
+    tasks = [loop.create_task(inf_as(loop)) for _ in range(4000)]
     results = loop.run_until_complete(asyncio.gather(*tasks))
 
 if __name__ == '__main__':
