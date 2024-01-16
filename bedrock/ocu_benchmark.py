@@ -60,17 +60,18 @@ def get_emb(txt):
     embedding = response_body.get("embedding")
     return embedding
 
-qs_emb =[get_emb(x) for x in qs]
 
 
 # https://docs.aws.amazon.com/opensearch-service/latest/developerguide/search-example.html
-def inf():
+def inf(v):
+    # shuffle v to avoid query cache
+    random.shuffle(v)
     query = {
         "size": 5,
         "query": {
             "knn": {
                 "bedrock-knowledge-base-default-vector": {
-                    "vector": random.choice(qs_emb),
+                    "vector": v,
                     "k": 5
                 }
             }
@@ -80,19 +81,22 @@ def inf():
         body = query,
         index = 'bedrock-knowledge-base-default-index'
     )
-    print(response)
+    print('took %s, max_score %s' % (response.get('took'), response.get('hits').get('max_score')))
 
-async def inf_as(lp, executor):
-    await lp.run_in_executor(executor, inf)
+async def inf_as(lp, executor, v):
+    await lp.run_in_executor(executor, inf, v)
 
 
 def main():
+    # set max clients as your need
     MAX_CLIENTS = None
     if MAX_CLIENTS is None:
         MAX_CLIENTS = os.cpu_count()
+    # get query vectors from query string
+    qs_emb =[get_emb(x) for x in qs]
     process_executor = ProcessPoolExecutor(max_workers = MAX_CLIENTS)
     loop = asyncio.get_event_loop()
-    tasks = [loop.create_task(inf_as(loop, process_executor)) for _ in range(1)]
+    tasks = [loop.create_task(inf_as(loop, process_executor, random.choice(qs_emb))) for _ in range(1)]
     results = loop.run_until_complete(asyncio.gather(*tasks))
 
 if __name__ == '__main__':
