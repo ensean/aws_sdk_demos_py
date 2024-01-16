@@ -2,7 +2,9 @@ import boto3
 import json
 import asyncio
 import random
+import os
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
+from concurrent.futures import ProcessPoolExecutor
 
 bedrock = boto3.client(service_name="bedrock-agent-runtime", region_name = 'us-west-2')
 bedrock_rt = boto3.client(service_name="bedrock-runtime", region_name = 'us-west-2')
@@ -11,7 +13,7 @@ bedrock_rt = boto3.client(service_name="bedrock-runtime", region_name = 'us-west
 host = 'xxxxxx.us-west-2.aoss.amazonaws.com' # cluster endpoint, for example: my-test-domain.us-east-1.aoss.amazonaws.com
 region = 'us-west-2'
 service = 'aoss'
-# 确保当前 credential 实体能够访问 opensearch serverless collection
+# 确保当前 credential principal 能够访问 opensearch serverless collection
 # 具体配置路径为: collection -> data access -> edit ->  添加 principals
 credentials = boto3.Session().get_credentials()
 auth = AWSV4SignerAuth(credentials, region, service)
@@ -25,7 +27,7 @@ client = OpenSearch(
     pool_maxsize = 20
 )
 
-# url = 'https://uuqvo5wzb2qqf6b0fgpl.us-west-2.aoss.amazonaws.com/bedrock-knowledge-base-default-index/_search'
+# url = 'https://xxxxxx.us-west-2.aoss.amazonaws.com/bedrock-knowledge-base-default-index/_search'
 
 qs = [
     "JDK 与 JRE 有什么差异",
@@ -80,13 +82,17 @@ def inf():
     )
     print(response)
 
-async def inf_as(lp):
-    await lp.run_in_executor(None, inf)
+async def inf_as(lp, executor):
+    await lp.run_in_executor(executor, inf)
 
 
 def main():
+    MAX_CLIENTS = None
+    if MAX_CLIENTS is None:
+        MAX_CLIENTS = os.cpu_count()
+    process_executor = ProcessPoolExecutor(max_workers = MAX_CLIENTS)
     loop = asyncio.get_event_loop()
-    tasks = [loop.create_task(inf_as(loop)) for _ in range(100000)]
+    tasks = [loop.create_task(inf_as(loop, process_executor)) for _ in range(1)]
     results = loop.run_until_complete(asyncio.gather(*tasks))
 
 if __name__ == '__main__':
